@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalaburagi Gold Price</title>
+    <style>
+        /* --- Existing CSS kept as is --- */
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Existing HTML content remains unchanged -->
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
+
+    <script>
+      // Your web app's Firebase configuration
+      const firebaseConfig = {
+        apiKey: "AIzaSyCAOKro9wpktwqqZLMlaDPo5jbuzAfUt1w",
+        authDomain: "klbgoldp.firebaseapp.com",
+        projectId: "klbgoldp",
+        storageBucket: "klbgoldp.firebasestorage.app",
+        messagingSenderId: "844739682604",
+        appId: "1:844739682604:web:21cd641de68d3d9ea00c89",
+        measurementId: "G-3VYPQLQ7PB"
+      };
+
+      // Initialize Firebase
+      const app = firebase.initializeApp(firebaseConfig);
+      const analytics = firebase.analytics();
+      const db = firebase.firestore();
+
+      let currentPrice = 65000;
+      let isLoggedIn = false;
+      let adminPassword = 'admin123';
+      const ADMIN_USERNAME = 'admin';
+      const MASTER_PASSWORD = 'gold123';
+      const MIN_PASSWORD_LENGTH = 6;
+
+      function initializeAppCustom() {
+        fetchPriceFromFirebase();
+        updateUIState();
+        setupKeyboardListeners();
+      }
+
+      function fetchPriceFromFirebase() {
+        db.collection("prices").doc("gold").onSnapshot((doc) => {
+          if (doc.exists) {
+            currentPrice = doc.data().value;
+            updatePublicDisplay();
+          }
+        });
+      }
+
+      function updatePriceInFirebase(newPrice) {
+        return db.collection("prices").doc("gold").set({ value: newPrice });
+      }
+
+      function updatePublicDisplay() {
+        const priceElement = document.getElementById('publicPrice');
+        const timestampElement = document.getElementById('publicTimestamp');
+        priceElement.textContent = '₹' + currentPrice.toLocaleString('en-IN');
+        const now = new Date();
+        timestampElement.textContent = `Last updated: ${now.toLocaleString('en-IN')}`;
+      }
+
+      function handlePriceUpdate() {
+        const newPriceInput = document.getElementById('newPrice');
+        const newPriceValue = parseFloat(newPriceInput.value);
+        if (!isNaN(newPriceValue) && newPriceValue > 0) {
+          const oldPrice = currentPrice;
+          currentPrice = newPriceValue;
+          updatePriceInFirebase(currentPrice);
+          updatePublicDisplay();
+          newPriceInput.value = '';
+        }
+      }
+
+      document.addEventListener('DOMContentLoaded', initializeAppCustom);
+    </script>
+</body>
+</html>
